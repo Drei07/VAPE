@@ -27,33 +27,44 @@ class SensorData
 
     public function saveData($fileName, $alertMessage, $room)
     {
-        // Reset status to false if invalid data
         if ($alertMessage === "NO DATA" || $room === "NO DATA") {
             $this->saveDataStatus = false;
             return false; // Skip insertion
         }
-
-        // Check if the status is already true to prevent multiple insertions
+    
         if (!$this->saveDataStatus) {
             try {
-                // Perform the insert query
                 $stmt = $this->runQuery("INSERT INTO sensorData (image, alert_message, room) VALUES (:image, :alert_message, :room)");
                 $stmt->bindParam(':image', $fileName);
                 $stmt->bindParam(':alert_message', $alertMessage);
                 $stmt->bindParam(':room', $room);
-
+    
                 if ($stmt->execute()) {
                     $this->saveDataStatus = true; // Set status to true after successful insertion
                     return true;
+                } else {
+                    // Debugging output for query failure
+                    $errorInfo = $stmt->errorInfo();
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Database insertion failed.',
+                        'error_info' => $errorInfo
+                    ]);
+                    return false;
                 }
             } catch (Exception $e) {
-                // Handle exception
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Exception during query execution.',
+                    'exception' => $e->getMessage()
+                ]);
                 return false;
             }
         }
-
+    
         return false; // Prevent multiple insertions
     }
+    
 }
 
 // Main Script

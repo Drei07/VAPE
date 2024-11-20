@@ -13,15 +13,15 @@ class Database
         if ($_SERVER['SERVER_NAME'] === 'localhost' || $_SERVER['SERVER_ADDR'] === '127.0.0.1' || $_SERVER['SERVER_ADDR'] === '192.168.1.72') {
             // Localhost connection
             $this->host = "localhost";
-            $this->db_name = "smart_irrigation";
+            $this->db_name = "adutect";
             $this->username = "root";
             $this->password = "";
         } else {
             // Live server connection
             $this->host = "localhost";
-            $this->db_name = "u297724503_irrigation";
-            $this->username = "u297724503_irrigation";
-            $this->password = "SmartIrrigation2024@";
+            $this->db_name = "u297724503_adutect";
+            $this->username = "u297724503_adutect";
+            $this->password = "Adutect2024@";
         }
     }
 

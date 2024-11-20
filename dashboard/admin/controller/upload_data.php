@@ -71,6 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
+            // Parse JSON data
+            $jsonData = $_POST['json'] ?? '{}'; // Assuming JSON data is sent as 'json' in POST
+            $data = json_decode($jsonData, true);
+
+            $alertMessage = $data['AlertMessage'] ?? null;
+            $room = $data['Room'] ?? null;
+
             if ($alertMessage && $room) {
                 // Save data to the database
                 if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {

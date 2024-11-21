@@ -24,20 +24,21 @@ class SensorData
         return $stmt;
     }
 
+
     public function saveData($fileName, $alertMessage, $room)
     {
         if ($alertMessage === "NO DATA" || $room === "NO DATA") {
             $this->saveDataStatus = false;
             return false; // Skip insertion
         }
-
+    
         if (!$this->saveDataStatus) {
             try {
-                $stmt = $this->runQuery("INSERT INTO sensorTable (image, alert_message, room) VALUES (:image, :alert_message, :room)");
+                $stmt = $this->runQuery("INSERT INTO sensorTable(image, alert_message, room) VALUES (:image, :alert_message, :room)");
                 $stmt->bindParam(':image', $fileName);
                 $stmt->bindParam(':alert_message', $alertMessage);
                 $stmt->bindParam(':room', $room);
-
+    
                 if ($stmt->execute()) {
                     $this->saveDataStatus = true; // Set status to true after successful insertion
                     return true;
@@ -60,9 +61,10 @@ class SensorData
                 return false;
             }
         }
-
+    
         return false; // Prevent multiple insertions
     }
+    
 }
 
 // Main Script
@@ -80,29 +82,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
-            // Fetch JSON data from proxy server
-            $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
-            $proxyResponse = file_get_contents($proxyServerUrl);
+            // Parse JSON data
+            $jsonData = $_POST['json'] ?? '{}'; // Assuming JSON data is sent as 'json' in POST
+            $data = json_decode($jsonData, true);
 
-            if ($proxyResponse !== false) {
-                $jsonData = json_decode($proxyResponse, true);
+            $alertMessage = $data['AlertMessage'] ?? null;
+            $room = $data['Room'] ?? null;
 
-                if (isset($jsonData['AlertMessage'], $jsonData['Room'])) {
-                    $alertMessage = $jsonData['AlertMessage'];
-                    $room = $jsonData['Room'];
-
-                    // Save data to the database
-                    if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
-                        $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
-                    } else {
-                        $response['message'] = 'Failed to save data to the database.';
-                    }
+            if ($alertMessage && $room) {
+                // Save data to the database
+                if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
+                    $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
                 } else {
-                    $response['message'] = 'Invalid JSON response from proxy server.';
+                    $response['message'] = 'Failed to save data to the database.';
                 }
             } else {
-                $response['message'] = 'Failed to fetch data from proxy server.';
-                error_log("Failed to fetch data from proxy server: $proxyServerUrl");
+                $response['message'] = 'Invalid JSON data.';
             }
         } else {
             $response['message'] = 'Error uploading file.';
@@ -117,3 +112,42 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 } else {
     echo 'Invalid request method.';
 }
+
+// File to store the latest data
+$dataFile = 'latest_data.json';
+$timeoutDuration = 60; // 1 minute timeout duration
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Receive data from ESP32 and save it to the file
+    $data = file_get_contents('php://input');
+    $dataArray = json_decode($data, true);
+    $dataArray['timestamp'] = time(); // Add a timestamp
+    file_put_contents($dataFile, json_encode($dataArray));
+    echo 'Data received';
+} else {
+    // Serve the latest data
+    if (file_exists($dataFile)) {
+        $data = json_decode(file_get_contents($dataFile), true);
+        $currentTime = time();
+        $dataAge = $currentTime - $data['timestamp'];
+        
+        if ($dataAge > $timeoutDuration) {
+            echo json_encode([
+                'imageStatus' => 'NOT CAPTURED',
+                'AlertMessage' => 'NO DATA',
+                'Room' => 'NO DATA',
+
+            ]);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($data);
+        }
+    } else {
+        echo json_encode([
+            'imageStatus' => 'NOT CAPTURED',
+            'AlertMessage' => 'NO DATA',
+            'Room' => 'NO DATA',
+        ]);
+    }
+}
+?>

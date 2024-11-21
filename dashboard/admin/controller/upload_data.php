@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
             // Parse JSON data
-            $proxyServerUrl = 'https://servify.cloud/dashboard/admin/controller/data.php'; // Replace with your proxy server URL
+            $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
             $response = file_get_contents($proxyServerUrl);
             if ($response !== false) {
                 header('Content-Type: application/json');

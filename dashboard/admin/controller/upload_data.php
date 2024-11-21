@@ -118,6 +118,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $fileExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
         $sensorData->saveData(basename($uploadFile));
+        if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
+
+        } else {
+            $response['message'] = 'Error uploading file.';
+        }
     } else {
         $response['message'] = 'No file uploaded.';
     }

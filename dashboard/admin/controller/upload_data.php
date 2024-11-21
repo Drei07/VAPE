@@ -117,18 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uniqueId = uniqid('', true);
         $fileExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
-
-        if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
-
-                // Save data to the database
-                if ($sensorData->saveData(basename($uploadFile))) {
-                    $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
-                } else {
-                    $response['message'] = 'Failed to save data to the database.';
-                }
-        } else {
-            $response['message'] = 'Error uploading file.';
-        }
+        $sensorData->saveData(basename($uploadFile));
     } else {
         $response['message'] = 'No file uploaded.';
     }

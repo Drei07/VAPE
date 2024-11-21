@@ -44,8 +44,8 @@ class SensorData
                         error_log("Failed to fetch data from proxy server.");
                     }
         
-                    $alertMessage = $response['AlertMessage'] ?? null;
-                    $room = $response['Room'] ?? null;
+                    $alertMessage = $response['AlertMessage'];
+                    $room = $response['Room'];
         
         if ($alertMessage === "NO DATA" || $room === "NO DATA") {
             $this->saveDataStatus = false;

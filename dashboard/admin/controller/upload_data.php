@@ -72,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sensorData = new SensorData();
 
     // Define the upload directory
-    $uploadDir = '../../../src/evidences';
+    $uploadDir = '../../../src/evidences/';
     $response = ['status' => 'error', 'message' => 'Something went wrong.'];
 
     if (isset($_FILES['file'])) {

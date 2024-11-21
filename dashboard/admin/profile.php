@@ -1,7 +1,5 @@
 <?php
 include_once 'header.php';
-require_once 'fetch.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -70,9 +68,9 @@ require_once 'fetch.php';
                                 <img src="../../src/img/<?php echo $user_profile ?>" alt="logo">
 
                                 <a href="controller/profile-controller.php?id=<?php echo $user_id ?>&delete_avatar=1" class="delete"><i class='bx bxs-trash'></i></a>
-                                <button class="btn-success change" onclick="edit()"><i class='bx bxs-edit'></i> Edit Profile</button>
-                                <button class="btn-success change" onclick="avatar()"><i class='bx bxs-user'></i> Change Avatar</button>
-                                <button class="btn-success change" onclick="password()"><i class='bx bxs-key'></i> Change Password</button>
+                                <button class="btn-dark change" onclick="edit()"><i class='bx bxs-edit'></i> Edit Profile</button>
+                                <button class="btn-dark change" onclick="avatar()"><i class='bx bxs-user'></i> Change Avatar</button>
+                                <button class="btn-dark change" onclick="password()"><i class='bx bxs-key'></i> Change Password</button>
 
                             </div>
 

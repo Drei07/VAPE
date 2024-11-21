@@ -52,13 +52,12 @@ $footer_signin = new FooterSignin();
 								</div>
 
 								<div class="form-group m-0">
-									<button type="submit"  id="submit" class="btn btn-success btn-block" name="btn-signin">
+									<button type="submit"  id="submit" class="btn btn-dark btn-block" name="btn-signin">
 										Sign In
 									</button>
 								</div>
 							</form>
 						</div>
-						<h1 class="signup">Don't have an account?<a href="signup"> Click here to sign up!</a></h1>
 					</div>
 					<footer><?php echo $config->getSystemCopyright() ?></footer>
 				</div>

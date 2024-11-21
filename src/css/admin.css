@@ -25,7 +25,7 @@ ol, ul {
 	--lato: 'Lato', sans-serif;
 
 	--light: #F9F9F9;
-	--main: #28a745;
+	--main: #040404;
 	--light-main: #c59de744;
 	--dark-main:#966abd;
 	--button:#f675c7;
@@ -202,7 +202,7 @@ border-right-color: var(--main);
 
 }
 #sidebar .brand img{
-	width: 51px;
+	width: 40px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -783,9 +783,9 @@ border-right-color: var(--main);
 	padding-left: 6px;
 }
 #content main .table-data .order table td img {
-	width: 36px;
-	height: 36px;
-	border-radius: 50%;
+	width: 150px;
+	height: 150px;
+	border-radius: 10px;
 	object-fit: cover;
 }
 #content main .table-data .order table tbody tr:hover {

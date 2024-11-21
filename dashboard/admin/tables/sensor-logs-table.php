@@ -12,7 +12,7 @@ if(!$user->isUserLoggedIn())
 // Use the runQuery method to prepare and execute queries.
 function get_total_row($user)
 {
-    $pdoQuery = "SELECT COUNT(*) as total_rows FROM sensor_logs";
+    $pdoQuery = "SELECT COUNT(*) as total_rows FROM sensorTable";
     $pdoResult = $user->runQuery($pdoQuery);
     $pdoResult->execute();
     $row = $pdoResult->fetch(PDO::FETCH_ASSOC);
@@ -32,7 +32,7 @@ else
     $start = 0;
 }
 
-$query = "SELECT * FROM sensor_logs";
+$query = "SELECT * FROM sensorTable";
 
 $output = '';
 if($_POST['query'] != '') {
@@ -41,8 +41,7 @@ if($_POST['query'] != '') {
     $formatted_date = date("F j, Y", strtotime($search_term)); // Convert the search term to date format
 
     // Modify the query to search by email, activity, or formatted created_at date
-    $query .= ' WHERE sensor LIKE "%'.str_replace(' ', '%', $search_term).'%" 
-                OR status LIKE "%'.str_replace(' ', '%', $search_term).'%" 
+    $query .= ' WHERE alert_message LIKE "%'.str_replace(' ', '%', $search_term).'%" 
                 OR DATE_FORMAT(sensor_logs.created_at, "%M %e, %Y") LIKE "%'.str_replace(' ', '%', $formatted_date).'%"';
 }
 
@@ -68,8 +67,9 @@ if($total_data > 0)
         </div>
         <thead>
             <th>#</th>
-            <th>SENSOR</th>
-            <th>STATUS</th>
+            <th>ALERT MESSAGE</th>
+            <th>ROOM</th>
+            <th>IMAGE</th>
             <th>LOG DATE</th>
         </thead>
     ';
@@ -80,8 +80,9 @@ if($total_data > 0)
         $output .= '
         <tr>
             <td>'.$row["id"].'</td>
-            <td>'.$row["sensor"].'</td>
-            <td>'.$row["status"].'</td>
+            <td>'.$row["alert_message"].'</td>
+            <td>'.$row["room"].'</td>
+            <td><a href="../../src/evidences/' . $row["image"] . '" data-lightbox="images" data-title="Evidences"><img src="../../src/evidences/' . $row["image"] . '"></a></td>
             <td>'.date("F j, Y (h:i A)", strtotime($row['created_at'])).'</td>
             </tr>
         ';
@@ -209,4 +210,6 @@ echo $output;
 ?>
 <script src="../../src/node_modules/sweetalert/dist/sweetalert.min.js"></script>
 <script src="../../src/js/form.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/css/lightbox.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.1/js/lightbox.min.js"></script>
 </table>

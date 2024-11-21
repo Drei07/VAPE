@@ -1,7 +1,5 @@
 <?php
 include_once 'header.php';
-require_once 'fetch.php';
-
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -63,7 +61,7 @@ require_once 'fetch.php';
 			<div class="table-data">
 				<div class="order">
 					<div class="head">
-						<h3><i class='bx bxs-report'></i> Smart Irrigation Reports</h3>
+						<h3><i class='bx bxs-report'></i> Adutect Reports</h3>
 					</div>
 
 					<!-- BODY -->

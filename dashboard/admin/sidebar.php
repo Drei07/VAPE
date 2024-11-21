@@ -26,9 +26,9 @@ class SideBar
         return '
         <section id="sidebar">
             <a href="" class="brand">
-                <img src="../../src/img/plant-support-icon.png" alt="logo">
-                <span class="text">PlantSupport<br>
-                    <p>Smart Irrigation</p>
+                <img src="../../src/img/logo1.png" alt="logo">
+                <span class="text">ADUTECT<br>
+                    <p>Smart Smoke Detection</p>
                 </span>
             </a>
             <ul class="side-menu top">
@@ -38,26 +38,10 @@ class SideBar
                         <span class="text">Dashboard</span>
                     </a>
                 </li>
-                <li class="' . $this->isActive('thresholds') . '">
-                    <a href="thresholds">
-                        <i class="bx bxs-tachometer"></i>
-                        <span class="text">Thresholds</span>
-                    </a>
-                </li>
-                <li class="' . $this->isActive('plants') . '">
-                <a href="plants">
-                    <i class="bx bxs-leaf"></i>
-                    <span class="text">Plants</span>
-                </a>
                 <li class="' . $this->isActive('reports') . '">
                 <a href="reports">
                     <i class="bx bxs-report"></i>
                     <span class="text">Reports</span>
-                </a>
-                <li class="' . $this->isActive('user-management') . '">
-                <a href="user-management">
-                    <i class="bx bxs-user-account"></i>
-                    <span class="text">User</span>
                 </a>
             </li>
             </ul>

@@ -25,8 +25,28 @@ class SensorData
     }
 
 
-    public function saveData($fileName, $alertMessage, $room)
+    public function saveData($fileName)
     {
+                    // Parse JSON data
+                    $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
+                    $response = file_get_contents($proxyServerUrl);
+                    if ($response !== false) {
+                        header('Content-Type: application/json');
+                        echo $response;
+                    } else {
+                        header('Content-Type: application/json');
+                        echo json_encode([
+                            'imageStatus' => 'NOT CAPTURED',
+                            'AlertMessage' => 'NO DATA',
+                            'Room' => 'NO DATA',
+                        ]);
+                    
+                        error_log("Failed to fetch data from proxy server.");
+                    }
+        
+                    $alertMessage = $response['AlertMessage'] ?? null;
+                    $room = $response['Room'] ?? null;
+        
         if ($alertMessage === "NO DATA" || $room === "NO DATA") {
             $this->saveDataStatus = false;
             return false; // Skip insertion
@@ -82,37 +102,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
-            // Parse JSON data
-            $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
-            $response = file_get_contents($proxyServerUrl);
-            if ($response !== false) {
-                header('Content-Type: application/json');
-                echo $response;
-            } else {
-                header('Content-Type: application/json');
-                echo json_encode([
-                    'wifi_status' => 'No device found',
-                    'phLevel' => 0.0, // Default value for pH Level
-                    'turbidityLevel' => 0.0, // Default value for Turbidity Level
-                    'TDSLevel' => 0.0 // Default value for TDS Level
-                ]);
-            
-                error_log("Failed to fetch data from proxy server.");
-            }
 
-            $alertMessage = $response['AlertMessage'] ?? null;
-            $room = $response['Room'] ?? null;
 
-            if ($alertMessage && $room) {
                 // Save data to the database
-                if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
+                if ($sensorData->saveData(basename($uploadFile))) {
                     $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
                 } else {
                     $response['message'] = 'Failed to save data to the database.';
                 }
-            } else {
-                $response['message'] = 'Invalid JSON data.';
-            }
         } else {
             $response['message'] = 'Error uploading file.';
         }

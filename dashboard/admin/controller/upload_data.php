@@ -34,7 +34,7 @@ class SensorData
     
         if (!$this->saveDataStatus) {
             try {
-                $stmt = $this->runQuery("INSERT INTO sensorData (image, alert_message, room) VALUES (:image, :alert_message, :room)");
+                $stmt = $this->runQuery("INSERT INTO sensorTable (image, alert_message, room) VALUES (:image, :alert_message, :room)");
                 $stmt->bindParam(':image', $fileName);
                 $stmt->bindParam(':alert_message', $alertMessage);
                 $stmt->bindParam(':room', $room);

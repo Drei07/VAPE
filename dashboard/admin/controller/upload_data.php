@@ -25,82 +25,45 @@ class SensorData
     }
 
 
-    public function saveData($fileName)
+    public function saveData($fileName, $alertMessage, $room)
     {
-        // Set the proxy server URL
-        $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
-        // Fetch data from the proxy server
-        $response = file_get_contents($proxyServerUrl);
+        if ($alertMessage === "NO DATA" || $room === "NO DATA") {
+            $this->saveDataStatus = false;
+            return false; // Skip insertion
+        }
     
-        // Check if the response was successful
-        if ($response !== false) {
-            // Decode the JSON response from the proxy server
-            $data = json_decode($response, true);
+        if (!$this->saveDataStatus) {
+            try {
+                $stmt = $this->runQuery("INSERT INTO sensorTable(image, alert_message, room) VALUES (:image, :alert_message, :room)");
+                $stmt->bindParam(':image', $fileName);
+                $stmt->bindParam(':alert_message', $alertMessage);
+                $stmt->bindParam(':room', $room);
     
-            // Check if data is valid and contains required fields
-            if (isset($data['alert_message']) && isset($data['room'])) {
-                $alertMessage = $data['alert_message'];
-                $room = $data['room'];
-    
-                // If data contains "NO DATA", do not proceed with the insertion
-                if ($alertMessage === "NO DATA" || $room === "NO DATA") {
-                    $this->saveDataStatus = false;
-                    return false; // Skip insertion if no data
+                if ($stmt->execute()) {
+                    $this->saveDataStatus = true; // Set status to true after successful insertion
+                    return true;
+                } else {
+                    // Debugging output for query failure
+                    $errorInfo = $stmt->errorInfo();
+                    echo json_encode([
+                        'status' => 'error',
+                        'message' => 'Database insertion failed.',
+                        'error_info' => $errorInfo
+                    ]);
+                    return false;
                 }
-    
-                // Check if the data should be inserted into the database
-                if (!$this->saveDataStatus) {
-                    try {
-                        // Prepare and execute the SQL query
-                        $stmt = $this->runQuery("INSERT INTO sensorTable(image, alert_message, room) VALUES (:image, :alert_message, :room)");
-                        $stmt->bindParam(':image', $fileName);
-                        $stmt->bindParam(':alert_message', $alertMessage);
-                        $stmt->bindParam(':room', $room);
-    
-                        // Execute the query and check if it was successful
-                        if ($stmt->execute()) {
-                            $this->saveDataStatus = true; // Set status to true after successful insertion
-                            return true; // Successfully inserted
-                        } else {
-                            // Output error info if the query failed
-                            $errorInfo = $stmt->errorInfo();
-                            echo json_encode([
-                                'status' => 'error',
-                                'message' => 'Database insertion failed.',
-                                'error_info' => $errorInfo
-                            ]);
-                            return false;
-                        }
-                    } catch (Exception $e) {
-                        // Handle exception if any occurs during query execution
-                        echo json_encode([
-                            'status' => 'error',
-                            'message' => 'Exception during query execution.',
-                            'exception' => $e->getMessage()
-                        ]);
-                        return false;
-                    }
-                }
-    
-                return false; // Prevent multiple insertions if already done
-            } else {
-                // Handle the case when the response doesn't contain the expected data
+            } catch (Exception $e) {
                 echo json_encode([
                     'status' => 'error',
-                    'message' => 'Invalid data received from proxy server.'
+                    'message' => 'Exception during query execution.',
+                    'exception' => $e->getMessage()
                 ]);
                 return false;
             }
-        } else {
-            // Handle the case when the proxy server request fails
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Failed to fetch data from proxy server.'
-            ]);
-            return false;
         }
-    }
     
+        return false; // Prevent multiple insertions
+    }
     
 }
 
@@ -117,9 +80,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uniqueId = uniqid('', true);
         $fileExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
-        $sensorData->saveData(basename($uploadFile));
-        if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
 
+        if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
+            // Parse JSON data
+            $jsonData = $_POST['json'] ?? '{}'; // Assuming JSON data is sent as 'json' in POST
+            $data = json_decode($jsonData, true);
+
+            $alertMessage = $data['AlertMessage'] ?? null;
+            $room = $data['Room'] ?? null;
+
+            if ($alertMessage && $room) {
+                // Save data to the database
+                if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
+                    $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
+                } else {
+                    $response['message'] = 'Failed to save data to the database.';
+                }
+            } else {
+                $response['message'] = 'Invalid JSON data.';
+            }
         } else {
             $response['message'] = 'Error uploading file.';
         }

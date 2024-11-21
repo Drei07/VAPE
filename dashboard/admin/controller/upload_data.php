@@ -24,41 +24,20 @@ class SensorData
         return $stmt;
     }
 
-
-    public function saveData($fileName)
+    public function saveData($fileName, $alertMessage, $room)
     {
-                    // Parse JSON data
-                    $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
-                    $response = file_get_contents($proxyServerUrl);
-                    if ($response !== false) {
-                        header('Content-Type: application/json');
-                        echo $response;
-                    } else {
-                        header('Content-Type: application/json');
-                        echo json_encode([
-                            'imageStatus' => 'NOT CAPTURED',
-                            'AlertMessage' => 'NO DATA',
-                            'Room' => 'NO DATA',
-                        ]);
-                    
-                        error_log("Failed to fetch data from proxy server.");
-                    }
-        
-                    $alertMessage = $response['AlertMessage'];
-                    $room = $response['Room'];
-        
         if ($alertMessage === "NO DATA" || $room === "NO DATA") {
             $this->saveDataStatus = false;
             return false; // Skip insertion
         }
-    
+
         if (!$this->saveDataStatus) {
             try {
                 $stmt = $this->runQuery("INSERT INTO sensorTable (image, alert_message, room) VALUES (:image, :alert_message, :room)");
                 $stmt->bindParam(':image', $fileName);
                 $stmt->bindParam(':alert_message', $alertMessage);
                 $stmt->bindParam(':room', $room);
-    
+
                 if ($stmt->execute()) {
                     $this->saveDataStatus = true; // Set status to true after successful insertion
                     return true;
@@ -81,10 +60,9 @@ class SensorData
                 return false;
             }
         }
-    
+
         return false; // Prevent multiple insertions
     }
-    
 }
 
 // Main Script
@@ -102,14 +80,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
+            // Fetch JSON data from proxy server
+            $proxyServerUrl = 'https://adutect.website/dashboard/admin/controller/fetch_data.php'; // Replace with your proxy server URL
+            $proxyResponse = file_get_contents($proxyServerUrl);
 
+            if ($proxyResponse !== false) {
+                $jsonData = json_decode($proxyResponse, true);
 
-                // Save data to the database
-                if ($sensorData->saveData(basename($uploadFile))) {
-                    $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
+                if (isset($jsonData['AlertMessage'], $jsonData['Room'])) {
+                    $alertMessage = $jsonData['AlertMessage'];
+                    $room = $jsonData['Room'];
+
+                    // Save data to the database
+                    if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
+                        $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
+                    } else {
+                        $response['message'] = 'Failed to save data to the database.';
+                    }
                 } else {
-                    $response['message'] = 'Failed to save data to the database.';
+                    $response['message'] = 'Invalid JSON response from proxy server.';
                 }
+            } else {
+                $response['message'] = 'Failed to fetch data from proxy server.';
+                error_log("Failed to fetch data from proxy server: $proxyServerUrl");
+            }
         } else {
             $response['message'] = 'Error uploading file.';
         }

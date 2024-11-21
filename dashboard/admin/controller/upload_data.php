@@ -28,23 +28,14 @@ class SensorData
 
     public function saveData($fileName)
     {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Receive data from ESP32
-            $data = file_get_contents('php://input');
-            $dataArray = json_decode($data, true);
-            $dataArray['timestamp'] = time(); // Add timestamp
-
-            file_put_contents($this->dataFile, json_encode($dataArray));
-        }
-
         // Read the latest data
         if (file_exists($this->dataFile)) {
             $data = json_decode(file_get_contents($this->dataFile), true);
             $currentTime = time();
             $dataAge = $currentTime - $data['timestamp'];
 
-            $alertMessage = $dataAge > $this->timeoutDuration ? 'NO DATA' : $data['AlertMessage'] ?? 'Unknown';
-            $room = $dataAge > $this->timeoutDuration ? 'NO DATA' : $data['Room'] ?? 'Unknown';
+            $alertMessage = $dataAge > $this->timeoutDuration ? 'NO DATA' : ($data['AlertMessage'] ?? 'Unknown');
+            $room = $dataAge > $this->timeoutDuration ? 'NO DATA' : ($data['Room'] ?? 'Unknown');
 
             if ($alertMessage === 'NO DATA' || $room === 'NO DATA') {
                 $this->saveDataStatus = false;
@@ -81,24 +72,53 @@ class SensorData
 
         return false;
     }
+
+    public function fetchJsonData()
+    {
+        if (file_exists($this->dataFile)) {
+            $data = json_decode(file_get_contents($this->dataFile), true);
+            $currentTime = time();
+            $dataAge = $currentTime - $data['timestamp'];
+
+            if ($dataAge > $this->timeoutDuration) {
+                return [
+                    'imageStatus' => 'NOT CAPTURED',
+                    'AlertMessage' => 'NO DATA',
+                    'Room' => 'NO DATA',
+                ];
+            }
+
+            return $data; // Return latest JSON data
+        }
+
+        return [
+            'imageStatus' => 'NOT CAPTURED',
+            'AlertMessage' => 'NO DATA',
+            'Room' => 'NO DATA',
+        ];
+    }
 }
 
 // Main Script
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $sensorData = new SensorData();
+$sensorData = new SensorData();
+$response = ['status' => 'error', 'message' => 'Something went wrong.'];
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uploadDir = '../../../src/evidences/';
-    $response = ['status' => 'error', 'message' => 'Something went wrong.'];
 
     if (isset($_FILES['file']) && $_FILES['file']['error'] === UPLOAD_ERR_OK) {
-        // Generate unique file name
+        // Generate a unique file name
         $uniqueId = uniqid('', true);
         $fileExtension = pathinfo($_FILES['file']['name'], PATHINFO_EXTENSION);
         $uploadFile = $uploadDir . $uniqueId . '.' . $fileExtension;
 
         if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
             if ($sensorData->saveData(basename($uploadFile))) {
-                $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
+                $response = [
+                    'status' => 'success',
+                    'message' => 'Data saved successfully.',
+                    'json_data' => $sensorData->fetchJsonData() // Fetch JSON and include in response
+                ];
             } else {
                 $response['message'] = 'Failed to save data to the database.';
             }
@@ -108,10 +128,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $response['message'] = 'No file uploaded or upload error.';
     }
-
-    // Send JSON response
-    header('Content-Type: application/json');
-    echo json_encode($response);
+} elseif ($_SERVER['REQUEST_METHOD'] === 'GET') {
+    // Serve the latest JSON data on a GET request
+    $response = [
+        'status' => 'success',
+        'message' => 'Fetched latest JSON data.',
+        'json_data' => $sensorData->fetchJsonData()
+    ];
 } else {
-    echo 'Invalid request method.';
+    $response['message'] = 'Invalid request method.';
 }
+
+// File to store the latest data
+$dataFile = 'latest_data.json';
+$timeoutDuration = 60; // 1 minute timeout duration
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Receive data from ESP32 and save it to the file
+    $data = file_get_contents('php://input');
+    $dataArray = json_decode($data, true);
+    $dataArray['timestamp'] = time(); // Add a timestamp
+    file_put_contents($dataFile, json_encode($dataArray));
+    echo 'Data received';
+} else {
+    // Serve the latest data
+    if (file_exists($dataFile)) {
+        $data = json_decode(file_get_contents($dataFile), true);
+        $currentTime = time();
+        $dataAge = $currentTime - $data['timestamp'];
+        
+        if ($dataAge > $timeoutDuration) {
+            echo json_encode([
+                'imageStatus' => 'NOT CAPTURED',
+                'AlertMessage' => 'NO DATA',
+                'Room' => 'NO DATA',
+
+            ]);
+        } else {
+            header('Content-Type: application/json');
+            echo json_encode($data);
+        }
+    } else {
+        echo json_encode([
+            'imageStatus' => 'NOT CAPTURED',
+            'AlertMessage' => 'NO DATA',
+            'Room' => 'NO DATA',
+        ]);
+    }
+}
+?>

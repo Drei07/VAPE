@@ -42,7 +42,7 @@ if($_POST['query'] != '') {
 
     // Modify the query to search by email, activity, or formatted created_at date
     $query .= ' WHERE alert_message LIKE "%'.str_replace(' ', '%', $search_term).'%" 
-                OR DATE_FORMAT(sensor_logs.created_at, "%M %e, %Y") LIKE "%'.str_replace(' ', '%', $formatted_date).'%"';
+                OR DATE_FORMAT(created_at, "%M %e, %Y") LIKE "%'.str_replace(' ', '%', $formatted_date).'%"';
 }
 
 $query .= ' ORDER BY id DESC ';

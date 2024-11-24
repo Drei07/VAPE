@@ -41,6 +41,7 @@ class SensorData
     
                 if ($stmt->execute()) {
                     $this->saveDataStatus = true; // Set status to true after successful insertion
+                    $this->sendEmailNotification($alertMessage, $room);
                     return true;
                 } else {
                     // Debugging output for query failure

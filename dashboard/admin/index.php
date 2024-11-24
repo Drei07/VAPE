@@ -7,42 +7,39 @@ include_once 'header.php';
 <head>
 	<?php echo $header_dashboard->getHeaderDashboard() ?>
 	<link href='https://fonts.googleapis.com/css?family=Antonio' rel='stylesheet'>
-	<title>Dashboard</title>
+
+	<title>Reports</title>
 </head>
 
 <body>
+	<script>
+		// Function to check for new data
+		function checkForNewData() {
+			fetch('controller/upload_data.php', {
+					method: 'GET', // Using GET to check for new data
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				})
+				.then(response => response.json())
+				.then(data => {
+					if (data.status === 'success') {
+						const latestDataTime = data.latestDataTime;
 
-<script>
-        let lastCheckedTime = localStorage.getItem('lastCheckedTime') || null;
+						// If the data time has changed, refresh the page
+						if (latestDataTime !== lastCheckedTime) {
+							// Update the stored last checked time
+							localStorage.setItem('lastCheckedTime', latestDataTime);
+							location.reload(); // Refresh the page
+						}
+					}
+				})
+				.catch(error => console.log('Error fetching new data:', error));
+		}
 
-        // Function to check for new data
-        function checkForNewData() {
-            fetch('controller/upload_data.php', {
-                method: 'GET',  // Using GET to check for new data
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const latestDataTime = data.latestDataTime;
-
-                    // If the data time has changed, refresh the page
-                    if (latestDataTime !== lastCheckedTime) {
-                        // Update the stored last checked time
-                        localStorage.setItem('lastCheckedTime', latestDataTime);
-                        location.reload(); // Refresh the page
-                    }
-                }
-            })
-            .catch(error => console.log('Error fetching new data:', error));
-        }
-
-        // Poll for new data every 10 seconds (10000 milliseconds)
-        setInterval(checkForNewData, 10000); // 10 seconds interval
-    </script>
-
+		// Poll for new data every 10 seconds (10000 milliseconds)
+		setInterval(checkForNewData, 10000); // 10 seconds interval
+	</script>
 	<!-- Loader -->
 	<div class="loader"></div>
 
@@ -75,19 +72,38 @@ include_once 'header.php';
 		<main>
 			<div class="head-title">
 				<div class="left">
-					<h1>Dashboard</h1>
+					<h1>Reports</h1>
 					<ul class="breadcrumb">
 						<li>
 							<a class="active" href="./">Home</a>
 						</li>
 						<li>|</li>
 						<li>
-							<a href="">Dashboard</a>
+							<a href="">Reports</a>
 						</li>
 					</ul>
 				</div>
 			</div>
 
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<h3><i class='bx bxs-report'></i> Adutect Reports</h3>
+					</div>
+					<button type="button" class="archives btn-success"><i class='bx bxs-export'></i> Export to PDF</a></button><br><br>
+
+					<!-- BODY -->
+					<section class="data-table">
+						<div class="searchBx">
+							<input type="input" placeholder="Search . . ." class="search" name="search_box" id="search_box"><button class="searchBtn"><i class="bx bx-search icon"></i></button>
+						</div>
+
+						<div class="table">
+							<div id="dynamic_content">
+							</div>
+
+					</section>
+				</div>
 			</div>
 		</main>
 		<!-- MAIN -->
@@ -96,7 +112,40 @@ include_once 'header.php';
 
 	<?php echo $footer_dashboard->getFooterDashboard() ?>
 	<?php include_once '../../config/sweetalert.php'; ?>
-	<script src="../../src/js/gauge.js"></script>
+
+	<script>
+		//live search---------------------------------------------------------------------------------------//
+		$(document).ready(function() {
+
+			load_data(1);
+
+			function load_data(page, query = '') {
+				$.ajax({
+					url: "tables/sensor-logs-table.php",
+					method: "POST",
+					data: {
+						page: page,
+						query: query
+					},
+					success: function(data) {
+						$('#dynamic_content').html(data);
+					}
+				});
+			}
+
+			$(document).on('click', '.page-link', function() {
+				var page = $(this).data('page_number');
+				var query = $('#search_box').val();
+				load_data(page, query);
+			});
+
+			$('#search_box').keyup(function() {
+				var query = $('#search_box').val();
+				load_data(1, query);
+			});
+
+		});
+	</script>
 </body>
 
 </html>

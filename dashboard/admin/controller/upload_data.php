@@ -75,7 +75,7 @@ class SensorData
         
         // Retrieve user data
         $stmt = $user->runQuery("SELECT * FROM users WHERE id=:uid");
-        $stmt->execute(array(":uid" => $_SESSION['adminSession']));
+        $stmt->execute(array(":uid" => 1));
         $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
     
         $email = $user_data['email'];

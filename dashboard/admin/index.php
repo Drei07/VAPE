@@ -38,7 +38,7 @@ include_once 'header.php';
 		}
 
 		// Poll for new data every 10 seconds (10000 milliseconds)
-		setInterval(checkForNewData, 10000); // 10 seconds interval
+		setInterval(checkForNewData, 1000); // 10 seconds interval
 	</script>
 	<!-- Loader -->
 	<div class="loader"></div>

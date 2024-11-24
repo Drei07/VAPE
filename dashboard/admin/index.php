@@ -12,30 +12,6 @@ include_once 'header.php';
 
 <body>
 
-<script>
-        // Function to fetch incoming alert data
-        function checkForAlert() {
-            fetch('upload_data.php', {
-                method: 'POST',
-                body: JSON.stringify({checkAlert: true}),
-                headers: {
-                    'Content-Type': 'application/json',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.alertMessage) {
-                    // Trigger window alert with the incoming message
-                    window.alert('Alert: ' + data.alertMessage + ' in room ' + data.room);
-                }
-            })
-            .catch(error => console.log('Error fetching alert:', error));
-        }
-
-        // Poll for new alerts every 10 seconds
-        setInterval(checkForAlert, 10000); // 10 seconds interval
-    </script>
-
 	<!-- Loader -->
 	<div class="loader"></div>
 

@@ -300,6 +300,26 @@ $('.save').on('click', function (e) {
 		});
 })
 
+
+//print
+$('.download').on('click', function (e) {
+	e.preventDefault();
+	const href = $(this).attr('href')
+
+	swal({
+		title: "Print?",
+		text: "Do you want to download this report?",
+		icon: "info",
+		buttons: true,
+		dangerMode: true,
+	})
+		.then((willDelete) => {
+			if (willDelete) {
+				document.location.href = href;
+			}
+		});
+})
+
 // Signout
 $('.btn-signout').on('click', function (e) {
 	e.preventDefault();

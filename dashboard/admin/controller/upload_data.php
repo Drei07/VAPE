@@ -185,6 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Save data to the database
                 if ($sensorData->saveData(basename($uploadFile), $alertMessage, $room)) {
                     $response = ['status' => 'success', 'message' => 'Data saved successfully.'];
+                    $response = ['status' => 'success', 'message' => 'Data saved successfully.', 'alertMessage' => $alertMessage, 'room' => $room];
                 } else {
                     $response['message'] = 'Failed to save data to the database.';
                 }

@@ -64,7 +64,98 @@ class SensorData
     
         return false; // Prevent multiple insertions
     }
+
+    public function sendEmailNotification($alertMessage, $room){
+        // Assuming you have a method to get SMTP details
+        $user = new ADMIN();
+        $smtp_email = $user->smtpEmail();
+        $smtp_password = $user->smtpPassword();
+        $system_name = $user->systemName();
+        
+        // Retrieve user data
+        $stmt = $user->runQuery("SELECT * FROM users WHERE id=:uid");
+        $stmt->execute(array(":uid" => $_SESSION['adminSession']));
+        $user_data = $stmt->fetch(PDO::FETCH_ASSOC);
     
+        $email = $user_data['email'];
+        $subject = "Alert Message: $alertMessage";
+    
+        $message = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <title>Alert Message</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    background-color: #f5f5f5;
+                    margin: 0;
+                    padding: 0;
+                }
+                .container {
+                    max-width: 600px;
+                    margin: 20px auto;
+                    padding: 30px;
+                    background-color: #ffffff;
+                    border-radius: 8px;
+                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+                }
+                h1 {
+                    color: #333333;
+                    font-size: 22px;
+                    margin-bottom: 20px;
+                    text-align: center;
+                }
+                p {
+                    color: #666666;
+                    font-size: 16px;
+                    line-height: 1.5;
+                    margin-bottom: 20px;
+                }
+                .button {
+                    display: block;
+                    width: 200px;
+                    margin: 20px auto;
+                    padding: 12px 20px;
+                    background-color: #0088cc;
+                    color: #ffffff;
+                    text-align: center;
+                    text-decoration: none;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    font-weight: bold;
+                }
+                .logo {
+                    text-align: center;
+                    margin-bottom: 30px;
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='logo'>
+                    <img src='cid:logo' alt='System Logo' width='150'>
+                </div>
+                <h1>Important Alert: $alertMessage</h1>
+                <p>Hello, $email</p>
+                <p>We have detected an alert in <strong>Room $room</strong>. Please take the necessary actions immediately.</p>
+                <p>Details of the alert:</p>
+                <ul>
+                    <li><strong>Message:</strong> $alertMessage</li>
+                    <li><strong>Room:</strong> $room</li>
+                    <li><strong>Time:</strong> " . date('Y-m-d H:i:s') . "</li>
+                </ul>
+                <p>If you believe this is a mistake, please contact the system administrator.</p>
+                <a class='button' href='#'>View More Details</a>
+            </div>
+        </body>
+        </html>
+        ";
+    
+        // Send the email
+        $user->send_mail($email, $message, $subject, $smtp_email, $smtp_password, $system_name);
+    }    
 }
 
 // Main Script

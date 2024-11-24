@@ -15,7 +15,7 @@ include_once 'header.php';
 <script>
         // Function to fetch incoming alert data
         function checkForAlert() {
-            fetch('controller/upload_data.php', {
+            fetch('upload_data.php', {
                 method: 'POST',
                 body: JSON.stringify({checkAlert: true}),
                 headers: {
@@ -25,9 +25,8 @@ include_once 'header.php';
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success' && data.alertMessage) {
-                    // Display the alert message
-                    document.getElementById('alertBox').classList.remove('close');
-                    document.getElementById('alertMessage').innerText = data.alertMessage + " in " + data.room;
+                    // Trigger window alert with the incoming message
+                    window.alert('Alert: ' + data.alertMessage + ' in room ' + data.room);
                 }
             })
             .catch(error => console.log('Error fetching alert:', error));
@@ -35,12 +34,8 @@ include_once 'header.php';
 
         // Poll for new alerts every 10 seconds
         setInterval(checkForAlert, 10000); // 10 seconds interval
-
-        // Optionally, you can also close the alert after a certain time
-        setTimeout(() => {
-            document.getElementById('alertBox').classList.add('close');
-        }, 30000); // Hide alert after 30 seconds
     </script>
+
 	<!-- Loader -->
 	<div class="loader"></div>
 

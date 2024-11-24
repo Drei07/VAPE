@@ -66,6 +66,15 @@ class SensorData
         return false; // Prevent multiple insertions
     }
 
+    public function getLatestDataTime()
+    {
+        // Query to get the latest timestamp of the data in your database
+        $stmt = $this->conn->prepare("SELECT MAX(created_at) AS latest_time FROM sensorTable");
+        $stmt->execute();
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result['latest_time'] ? $result['latest_time'] : null;
+    }
+
     public function sendEmailNotification($alertMessage, $room){
         // Assuming you have a method to get SMTP details
         $user = new ADMIN();
@@ -203,4 +212,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     echo json_encode($response);
 } else {
     echo 'Invalid request method.';
+}
+
+// Fetch latest data time
+$reportData = new SensorData();
+$latestDataTime = $reportData->getLatestDataTime();
+
+if ($latestDataTime) {
+    $response = [
+        'status' => 'success',
+        'latestDataTime' => $latestDataTime
+    ];
 }

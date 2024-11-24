@@ -12,6 +12,37 @@ include_once 'header.php';
 
 <body>
 
+<script>
+        let lastCheckedTime = localStorage.getItem('lastCheckedTime') || null;
+
+        // Function to check for new data
+        function checkForNewData() {
+            fetch('controller/upload_data.php', {
+                method: 'GET',  // Using GET to check for new data
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const latestDataTime = data.latestDataTime;
+
+                    // If the data time has changed, refresh the page
+                    if (latestDataTime !== lastCheckedTime) {
+                        // Update the stored last checked time
+                        localStorage.setItem('lastCheckedTime', latestDataTime);
+                        location.reload(); // Refresh the page
+                    }
+                }
+            })
+            .catch(error => console.log('Error fetching new data:', error));
+        }
+
+        // Poll for new data every 10 seconds (10000 milliseconds)
+        setInterval(checkForNewData, 10000); // 10 seconds interval
+    </script>
+
 	<!-- Loader -->
 	<div class="loader"></div>
 

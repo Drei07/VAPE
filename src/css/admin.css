@@ -2178,3 +2178,18 @@ border-right-color: var(--main);
 .other-option .radio-box input[type="checkbox"]:checked + label:after {
 	background-color: #2dbe6c;
   }
+
+  .image {
+	display: flex;
+	justify-content: center;
+  }
+
+  .image-text {
+	display: flex;
+	justify-content: center;
+	font-weight: bold;
+  }
+  .image img{
+	border-radius: 10px;
+	width: 400px;
+  }

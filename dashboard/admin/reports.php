@@ -8,7 +8,7 @@ include_once 'header.php';
 	<?php echo $header_dashboard->getHeaderDashboard() ?>
 	<link href='https://fonts.googleapis.com/css?family=Antonio' rel='stylesheet'>
 
-	<title>Dashboard</title>
+	<title>Reports</title>
 </head>
 
 <body>
@@ -72,14 +72,14 @@ include_once 'header.php';
 		<main>
 			<div class="head-title">
 				<div class="left">
-					<h1>Dashboards</h1>
+					<h1>Reports</h1>
 					<ul class="breadcrumb">
 						<li>
 							<a class="active" href="./">Home</a>
 						</li>
 						<li>|</li>
 						<li>
-							<a href="">Dashboards</a>
+							<a href="">Reports</a>
 						</li>
 					</ul>
 				</div>
@@ -88,24 +88,23 @@ include_once 'header.php';
 			<div class="table-data">
 				<div class="order">
 					<div class="head">
-						<h3><i class='bx bxs-camera'></i> Latest Image Captured</h3>
+						<h3><i class='bx bxs-report'></i> Adutect Reports</h3>
 					</div>
-					<p class="image-text">Alert Message : <?php echo $lastAlertMessage ?></p>
-					<p class="image-text" >Date : <?php echo $lastDate ?></p>
-					<div class="image">
-						<img src="../../src/evidences/<?php echo $lastImageCaptured ?>" alt="Image">
-					</div>
+
+					<!-- BODY -->
+					<section class="data-table">
+						<div class="searchBx">
+							<input type="input" placeholder="Search . . ." class="search" name="search_box" id="search_box"><button class="searchBtn"><i class="bx bx-search icon"></i></button>
+						</div>
+
+						<div class="table">
+							<div id="dynamic_content">
+							</div>
+
+					</section>
 				</div>
 			</div>
-
-			<div class="table-data">
-				<div class="order">
-					<div id="chartContainer" style="height: 370px; width: 100%;"></div>
-				</div>
-			</div>
-
 		</main>
-
 		<!-- MAIN -->
 	</section>
 	<!-- CONTENT -->
@@ -145,33 +144,7 @@ include_once 'header.php';
 			});
 
 		});
-		window.onload = function() {
-
-			var chart = new CanvasJS.Chart("chartContainer", {
-				animationEnabled: true,
-				theme: "light2", // You can change the theme or keep it
-				title: {
-					text: "Alert Messages Count"
-				},
-				backgroundColor: "#f9f9f9", // Set the chart's background color
-				axisY: {
-					title: "Number of Alerts"
-				},
-				data: [{
-					type: "column",
-					yValueFormatString: "#,##0",
-					indexLabel: "{y}",
-					indexLabelPlacement: "inside",
-					indexLabelFontColor: "white",
-					dataPoints: <?php echo json_encode($dataPoints, JSON_NUMERIC_CHECK); ?>
-				}]
-			});
-
-			chart.render();
-		}
 	</script>
-	<script src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
-
 </body>
 
 </html>

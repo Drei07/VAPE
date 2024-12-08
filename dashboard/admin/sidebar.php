@@ -38,6 +38,12 @@ class SideBar
                         <span class="text">Dashboard</span>
                     </a>
                 </li>
+                <li class="' . $this->isActive('reports') . '">
+                <a href="reports">
+                    <i class="bx bxs-report"></i>
+                    <span class="text">Reports</span>
+                </a>
+            </li>
             </li>
             </ul>
             <ul class="side-menu top">

@@ -37,4 +37,58 @@ $user_civil_status      = $user_data['civil_status'];
 $user_phone_number      = $user_data['phone_number'];
 $user_email             = $user_data['email'];
 $user_last_update       = $user_data['updated_at'];
+
+$database = new Database();
+$conn = $database->dbConnection();
+
+// List of all possible alert messages
+$alertMessages = [
+    'Tampering Alert',
+    'Fire Alert',
+    'Detected: Smoke from burning objects',
+    'Detected: Vape Smoke'
+];
+
+// SQL query to count specific alerts
+$sql = "SELECT alert_message, COUNT(*) as alert_count 
+        FROM sensorTable 
+        WHERE alert_message IN ('" . implode("', '", $alertMessages) . "')
+        GROUP BY alert_message";
+$stmt = $conn->prepare($sql);
+$stmt->execute();
+
+// Prepare data for the chart
+$dataPoints = array();
+
+// Store the results in an associative array for easy access
+$alertCounts = [];
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $alertCounts[$row['alert_message']] = $row['alert_count'];
+}
+
+// Loop through all possible alert messages and assign counts
+foreach ($alertMessages as $alertMessage) {
+    // If the alert message exists in the database results, use its count
+    // If not, set the count to 0
+    $count = isset($alertCounts[$alertMessage]) ? $alertCounts[$alertMessage] : 0;
+    $dataPoints[] = array("label" => $alertMessage, "y" => $count);
+}
+
+// SQL query to retrieve the last inserted data from the sensorTable
+$sqlLastInsert = "SELECT * FROM sensorTable ORDER BY created_at DESC LIMIT 1"; // assuming 'created_at' column exists
+$stmtLastInsert = $conn->prepare($sqlLastInsert);
+$stmtLastInsert->execute();
+
+// Fetch the last inserted record
+$lastInsertedData = $stmtLastInsert->fetch(PDO::FETCH_ASSOC);
+
+$lastImageCaptured = $lastInsertedData['image'];
+$lastAlertMessage = $lastInsertedData['alert_message'];
+$lastDate = date("F j, Y (h:i A)", strtotime($lastInsertedData['created_at']));
+
+
+
+
+// Close the connection
+$conn = null;
 ?>
